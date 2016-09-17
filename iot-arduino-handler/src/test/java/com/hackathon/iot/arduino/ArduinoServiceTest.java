@@ -12,7 +12,7 @@ import java.net.URI;
 import java.util.Date;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -71,7 +71,7 @@ public class ArduinoServiceTest {
     @Test
     public void persistDataPointPostsToDataEndpoint() {
         ArgumentCaptor<URI> uriArgumentCaptor = ArgumentCaptor.forClass(URI.class);
-        DataPoint dp = new DataPoint(1234L, 1234L, 1234L , 1, 1);
+        DataPoint dp = new DataPoint(1234L, 1234L, 1234L, 1, 1);
 
         ReflectionTestUtils.invokeMethod(arduinoService, "persistDataPoint", dp);
 

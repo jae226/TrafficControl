@@ -10,7 +10,7 @@ import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 
 @SpringBootApplication
 @EntityScan("com.hackathon.iot.commons")
-public class DataApplication  implements InitializingBean {
+public class DataApplication implements InitializingBean {
 
     @Autowired
     RepositoryRestConfiguration repositoryRestConfiguration;
