@@ -23,13 +23,14 @@
         <tbody>
         <iron-ajax
           auto
-          url="/api/data"
+          url="/data/traffic-data.json"
           handle-as="json"
           last-response="{{trafficData}}"
-        on-response="avgWtN">
+          on-response="avgWtN">
         </iron-ajax>
+        <!-- url="/api/data" -->
         <template is="dom-repeat" items="[[trafficData]]">
-          <tr >
+          <tr>
             <td style="border: 1px solid black;">[[item.timestamp]]</td>
             <td style="border: 1px solid black;">[[item.totalWaitTimeNorth]]</td>
             <td style="border: 1px solid black;">[[item.totalWaitTimeEast]]</td>
@@ -49,9 +50,8 @@
         auto
         url="/data/traffic-data.json"
         handle-as="json"
-        last-response="{{graphData}}"
         on-response="setGraphData"
-        >
+      >
       </iron-ajax>
       <px-vis-timeseries
         width="800"
@@ -60,15 +60,9 @@
         enable-tooltip="true"
         register-location="none"
         include-all-series
-        selection-type= "xy"
+        selection-type="xy"
         chart-data="[[graphData]]">
       </px-vis-timeseries>
-      <px-vis-data
-        id="seriesAjax"
-        data-var="graphData"
-        lists="flat"
-        response-data="{{graphData}}">
-      </px-vis-data>
     </px-card>
 
   </template>
@@ -79,38 +73,47 @@
       avgWtN: function (trafficData) {
         console.log(trafficData)
         console.log(trafficData.detail.response);
-        for(var i=0;i<trafficData.detail.response.length;i+=1){
-          var avg =trafficData.detail.response[i].totalWaitTimeNorth/trafficData.detail.response[i].totalCarsNorth;
-          trafficData.detail.response[i].avgWtN=Number(avg).toPrecision(3);
-          var avg2 =trafficData.detail.response[i].totalWaitTimeEast/trafficData.detail.response[i].totalCarsEast;
-          trafficData.detail.response[i].avgWtE= Number(avg2).toPrecision(3);
+        for (var i = 0; i < trafficData.detail.response.length; i += 1) {
+          var avg = trafficData.detail.response[i].totalWaitTimeNorth / trafficData.detail.response[i].totalCarsNorth;
+          trafficData.detail.response[i].avgWtN = Number(avg).toPrecision(3);
+          var avg2 = trafficData.detail.response[i].totalWaitTimeEast / trafficData.detail.response[i].totalCarsEast;
+          trafficData.detail.response[i].avgWtE = Number(avg2).toPrecision(3);
           //console.log(avg, avg2);
           //trafficData.detail.response[i].timeStr = toISOString(trafficData.detail.response[i].timeStamp);
         }
-        for(var i=0;i<trafficData.detail.response.length;i+=1) {
+        for (var i = 0; i < trafficData.detail.response.length; i += 1) {
           var avg3 = trafficData.detail.response[i].avgWtN / trafficData.detail.response[i].avgWtE;
           trafficData.detail.response[i].avgWtRatio = Number(avg3).toPrecision(3);
           //console.log(avg3);
         }
       },
-      setGraphData: function (graphData) {
-        for(var i=0;i<graphData.detail.response.length;i+=1){
-          var avg =graphData.detail.response[i].totalWaitTimeNorth/graphData.detail.response[i].totalCarsNorth;
-          graphData.detail.response[i].avgWtN=Number(avg).toPrecision(3);
-          var avg2 =graphData.detail.response[i].totalWaitTimeEast/graphData.detail.response[i].totalCarsEast;
-          graphData.detail.response[i].avgWtE= Number(avg2).toPrecision(3);
+      setGraphData: function (ajax) {
+        var response = ajax.detail.response;
+        var graphData = [];
+
+        var i;
+        for (i = 0; i < response.length; i += 1) {
+          var avg = response[i].totalWaitTimeNorth / response[i].totalCarsNorth;
+          response[i].avgWtN = Number(avg).toPrecision(3);
+          var avg2 = response[i].totalWaitTimeEast / response[i].totalCarsEast;
+          response[i].avgWtE = Number(avg2).toPrecision(3);
           //console.log(avg, avg2);
         }
-        for(var i=0;i<graphData.detail.response.length;i+=1) {
-          var avg3 = graphData.detail.response[i].avgWtN / graphData.detail.response[i].avgWtE;
-          graphData.detail.response[i].avgWtRatio = Number(avg3).toPrecision(3);
+
+        for (i = 0; i < response.length; i += 1) {
+          var avg3 = response[i].avgWtN / response[i].avgWtE;
+          response[i].avgWtRatio = Number(avg3).toPrecision(3);
           //console.log(avg3);
         }
-        for(var i=0;i<graphData.detail.response.length;i+=1) {
-          graphData.detail.response[i].x = graphData.detail.response[i].timeStamp;
-          graphData.detail.response[i].y = graphData.detail.response[i].avgWtRatio;
+
+        for (i = 0; i < response.length; i += 1) {
+          graphData.push({
+            x: response[i].timestamp,
+            y: response[i].avgWtRatio
+          });
         }
-        console.log(graphData.detail.response.x, graphData.detail.response.y)
+
+        this.graphData = graphData;
       }
 
     })
