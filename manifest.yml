@@ -6,3 +6,7 @@ applications:
   services:
   - iot-postgres
   path: iot-data/target/iot-data-1.0-SNAPSHOT.jar
+- name: iot-arduino-handler
+  host: iot-arduino-handler
+  memory: 1G
+  path: iot-arduino-handler/target/iot-arduino-handler-1.0-SNAPSHOT.jar
