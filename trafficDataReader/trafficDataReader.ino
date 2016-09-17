@@ -63,16 +63,21 @@ double redNorthRatio;
 long timeToBeGreenNorth = INTERVAL/2;
 long timeToBeRedNorth = INTERVAL/2;
 
-int sensorState = 0;
-int lastState = 0;
+int sensorStateNorth = 0;
+int sensorStateEast = 0;
+int lastStateNorth = 0;
+int lastStateEast = 0;
 
 void setup() {
   //pinMode(0, OUTPUT);
   pinMode(GREENLEDNORTH, OUTPUT);
   pinMode(REDLEDNORTH, OUTPUT);
+  pinMode(GREENLEDEAST, OUTPUT);
+  pinMode(REDLEDEAST, OUTPUT);
   pinMode(SENSORPINNORTH, INPUT);
   digitalWrite(SENSORPINNORTH, HIGH);
   digitalWrite(GREENLEDNORTH, HIGH);
+  digitalWrite(REDLEDEAST, HIGH);
 
   Serial.begin(115200);
   delay(100);
@@ -107,22 +112,27 @@ void loop() {
 
   timer.run();
   
-  sensorState = digitalRead(SENSORPINNORTH);
+  sensorStateNorth = digitalRead(SENSORPINNORTH);
+  sensorStateEast = digitalRead(SENSORPINEAST);
   
-  /*if (sensorState == LOW) {
+  /*if (sensorStateNorth == LOW) {
     digitalWrite(GREENLEDNORTH, HIGH);
   } else {
     digitalWrite(GREENLEDNORTH, LOW);
   }*/
   
-  if (sensorState && !lastState) {
+  if (sensorStateNorth && !lastStateNorth) {
     Serial.println(millis());
   }
-  /*if (!sensorState && lastState) {
+  if (sensorStateEast && !lastStateEast) {
+    Serial.println(millis());
+  }
+  /*if (!sensorStateNorth && lastStateNorth) {
     Serial.println("Broken");
     Serial.println(millis());
   }*/
-  lastState = sensorState;
+  lastStateNorth = sensorStateNorth;
+  lastStateEast = sensorStateEast;
 }
 
 void communicateWithServer() {
@@ -178,12 +188,16 @@ void communicateWithServer() {
 void changeLightColorToRedNorth() {
   digitalWrite(GREENLEDNORTH, LOW);
   digitalWrite(REDLEDNORTH, HIGH);
+  digitalWrite(GREENLEDEAST, HIGH);
+  digitalWrite(REDLEDEAST, LOW);
   timer.setTimeout(timeToBeRedNorth, changeLightColorToGreenNorth);
 }
 
 void changeLightColorToGreenNorth() {
   digitalWrite(GREENLEDNORTH, HIGH);
   digitalWrite(REDLEDNORTH, LOW);
+  digitalWrite(GREENLEDEAST, LOW);
+  digitalWrite(REDLEDEAST, HIGH);
   timer.setTimeout(timeToBeGreenNorth, changeLightColorToRedNorth);
 }
 
