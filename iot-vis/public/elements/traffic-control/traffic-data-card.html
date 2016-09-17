@@ -1,21 +1,23 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/px-card/px-card.html">
+<link rel="import" href="/bower_components/px-vis-timeseries/px-vis-timeseries.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 
 <dom-module id="traffic-data-card">
 
   <template>
     <px-card header-text="Traffic Data">
-      <table style="border: 1px solid black;">
+      <table style="border: 1px solid black; width:100%">
         <thead>
         <tr>
-          <th>Timestamp</th>
-          <th>Wait Time N</th>
-          <th>Wait Time E</th>
-          <th>Number of Cars N</th>
-          <th>Number of Cars E</th>
-          <th>Average Wait Time N</th>
-          <th>Average Wait Time E</th>
+          <th style="border: 1px solid black;">Timestamp</th>
+          <th style="border: 1px solid black;">Wait Time N</th>
+          <th style="border: 1px solid black;">Wait Time E</th>
+          <th style="border: 1px solid black;">Number of Cars N</th>
+          <th style="border: 1px solid black;">Number of Cars E</th>
+          <th style="border: 1px solid black;">Average Wait Time N</th>
+          <th style="border: 1px solid black;">Average Wait Time E</th>
+          <th style="border: 1px solid black;">Average Wait Time Ratio</th>
         </tr>
         </thead>
         <tbody>
@@ -24,23 +26,51 @@
           url="/data/traffic-data.json"
           handle-as="json"
           last-response="{{trafficData}}"
-        on-response="avgWtN"
-        on-response="avgWtE">
+        on-response="avgWtN">
         </iron-ajax>
         <template is="dom-repeat" items="[[trafficData]]">
-          <tr>
-            <td>[[item.timeStamp]]</td>
-            <td>[[item.waitTimeN]]</td>
-            <td>[[item.waitTimeE]]</td>
-            <td>[[item.numCarN]]</td>
-            <td>[[item.numCarE]]</td>
-            <td>[[item.avgWtN]]</td>
-            <td>[[item.avgWtE]]</td>
+          <tr >
+            <td style="border: 1px solid black;">[[item.timeStamp]]</td>
+            <td style="border: 1px solid black;">[[item.waitTimeN]]</td>
+            <td style="border: 1px solid black;">[[item.waitTimeE]]</td>
+            <td style="border: 1px solid black;">[[item.numCarN]]</td>
+            <td style="border: 1px solid black;">[[item.numCarE]]</td>
+            <td style="border: 1px solid black;">[[item.avgWtN]]</td>
+            <td style="border: 1px solid black;">[[item.avgWtE]]</td>
+            <td style="border: 1px solid black;">[[item.avgWtRatio]]</td>
           </tr>
         </template>
         </tbody>
       </table>
     </px-card>
+
+    <px-card header-text="Traffic Control Graph">
+      <iron-ajax
+        auto
+        url="/data/traffic-data.json"
+        handle-as="json"
+        last-response="{{graphData}}"
+        on-response="setGraphData"
+        >
+      </iron-ajax>
+      <px-vis-timeseries
+        width="800"
+        height="300"
+        prevent-resize="true"
+        enable-tooltip="true"
+        register-location="none"
+        include-all-series
+        selection-type= "xy"
+        chart-data="[[graphData]]">
+      </px-vis-timeseries>
+      <px-vis-data
+        id="seriesAjax"
+        data-var="graphData"
+        lists="flat"
+        response-data="{{graphData}}">
+      </px-vis-data>
+    </px-card>
+
   </template>
 
   <script>
@@ -48,23 +78,41 @@
       is: 'traffic-data-card',
       avgWtN: function (trafficData) {
         console.log(trafficData.detail.response);
-        var avglist=[];
         for(var i=0;i<trafficData.detail.response.length;i+=1){
           var avg =trafficData.detail.response[i].waitTimeN/trafficData.detail.response[i].numCarN;
-          avglist.push(avg);
           trafficData.detail.response[i].avgWtN=Number(avg).toPrecision(3);
-
+          var avg2 =trafficData.detail.response[i].waitTimeE/trafficData.detail.response[i].numCarE;
+          trafficData.detail.response[i].avgWtE= Number(avg2).toPrecision(3);
+          //console.log(avg, avg2);
+          //trafficData.detail.response[i].timeStr = toISOString(trafficData.detail.response[i].timeStamp);
         }
-        for(var i=0;i<trafficData.detail.response.length;i+=1){
-          var avg =trafficData.detail.response[i].waitTimeE/trafficData.detail.response[i].numCarE;
-          avglist.push(avg);
-          trafficData.detail.response[i].avgWtE= Number(avg).toPrecision(3);
+        for(var i=0;i<trafficData.detail.response.length;i+=1) {
+          var avg3 = trafficData.detail.response[i].avgWtN / trafficData.detail.response[i].avgWtE;
+          trafficData.detail.response[i].avgWtRatio = Number(avg3).toPrecision(3);
+          //console.log(avg3);
         }
-        console.log(avglist);
-        return avglist;
-
+      },
+      setGraphData: function (graphData) {
+        for(var i=0;i<graphData.detail.response.length;i+=1){
+          var avg =graphData.detail.response[i].waitTimeN/graphData.detail.response[i].numCarN;
+          graphData.detail.response[i].avgWtN=Number(avg).toPrecision(3);
+          var avg2 =graphData.detail.response[i].waitTimeE/graphData.detail.response[i].numCarE;
+          graphData.detail.response[i].avgWtE= Number(avg2).toPrecision(3);
+          //console.log(avg, avg2);
+        }
+        for(var i=0;i<graphData.detail.response.length;i+=1) {
+          var avg3 = graphData.detail.response[i].avgWtN / graphData.detail.response[i].avgWtE;
+          graphData.detail.response[i].avgWtRatio = Number(avg3).toPrecision(3);
+          //console.log(avg3);
+        }
+        for(var i=0;i<graphData.detail.response.length;i+=1) {
+          graphData.detail.response[i].x = graphData.detail.response[i].timeStamp;
+          graphData.detail.response[i].y = graphData.detail.response[i].avgWtRatio;
+        }
+        console.log(graphData.detail.response.x, graphData.detail.response.y)
       }
-    });
+
+    })
   </script>
 
 </dom-module>
