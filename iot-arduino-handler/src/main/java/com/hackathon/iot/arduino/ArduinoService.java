@@ -20,8 +20,8 @@ public class ArduinoService {
     }
 
     public CycleRatio processCycleData(CycleData cycleData) {
-        int numNorth = cycleData.getNorthSensorReadings().length;
-        int numEast = cycleData.getEastSensorReadings().length;
+        int numNorth = cycleData.getNorthSensorReadings().length == 0? 1 : cycleData.getNorthSensorReadings().length;
+        int numEast = cycleData.getEastSensorReadings().length == 0? 1 : cycleData.getEastSensorReadings().length;
 
         long actualEndTime = getActualEndTime(cycleData.getIntervalEnd(), cycleData.getSendTime(), new Date().getTime());
 
@@ -35,7 +35,7 @@ public class ArduinoService {
 
         persistDataPoint(dp);
 
-        double newNorthPercentage = calculateNorthPercentage(numNorth, numEast);
+        double newNorthPercentage = calculateNorthPercentage(numNorth*1.0, numEast*1.0);
         double newEastPercentage = 1 - newNorthPercentage;
 
         return new CycleRatio(newNorthPercentage, newEastPercentage);
@@ -65,7 +65,7 @@ public class ArduinoService {
         restTemplate.postForEntity(uri, dp, DataPoint.class);
     }
 
-    private double calculateNorthPercentage(int numCarsNorth, int numCarsEast) {
+    private double calculateNorthPercentage(double numCarsNorth, double numCarsEast) {
         return 1 / (1 + (numCarsEast / numCarsNorth));
     }
 }
