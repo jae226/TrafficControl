@@ -48,7 +48,7 @@ public class ArduinoService {
 
     private long getWaitTime(long[] arrivalTimes, long greenStart, long redStart, long intervalEnd) {
         long sum = 0;
-        for(long arrival : arrivalTimes) {
+        for (long arrival : arrivalTimes) {
             if (redStart > greenStart && arrival >= redStart) {
                 sum += intervalEnd - arrival;
             } else if (greenStart > redStart && arrival < greenStart) {
@@ -60,7 +60,7 @@ public class ArduinoService {
 
     private void persistDataPoint(DataPoint dp) {
         URI uri = UriComponentsBuilder.fromUriString("https://iot-data.run.aws-usw02-pr.ice.predix.io")
-                        .path("/dataPoints").build().toUri();
+                .path("/dataPoints").build().toUri();
 
         restTemplate.postForEntity(uri, dp, DataPoint.class);
     }
