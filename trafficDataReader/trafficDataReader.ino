@@ -15,11 +15,17 @@
 
 
 #define GREENLEDNORTH 12
+#define GREENLEDEAST 15
 #define REDLEDNORTH 14
+#define REDLEDEAST 13
+#define INTERVAL 20000
 
 #define SENSORPINNORTH 2
+#define SENSORPINEAST 16
 
 SimpleTimer timer;
+
+boolean lightBool = true;
 
 long trafficLightInterval = 20000;
 
@@ -44,7 +50,7 @@ long northGreenTime;
 
 long northRedTime;
 
-long EastGreenTime;
+long eastGreenTime;
 
 long eastRedTime;
 
@@ -52,14 +58,21 @@ long startInterval;
 long endInterval;
 long sendRequestTime;
 
+double greenNorthRatio;
+double redNorthRatio;
+long timeToBeGreenNorth = INTERVAL/2;
+long timeToBeRedNorth = INTERVAL/2;
+
 int sensorState = 0;
 int lastState = 0;
 
 void setup() {
   //pinMode(0, OUTPUT);
   pinMode(GREENLEDNORTH, OUTPUT);
+  pinMode(REDLEDNORTH, OUTPUT);
   pinMode(SENSORPINNORTH, INPUT);
   digitalWrite(SENSORPINNORTH, HIGH);
+  digitalWrite(GREENLEDNORTH, HIGH);
 
   Serial.begin(115200);
   delay(100);
@@ -87,6 +100,7 @@ void setup() {
   Serial.println(startInterval);
 
   timer.setInterval(trafficLightInterval, communicateWithServer);
+  timer.setTimeout(timeToBeGreenNorth, changeLightColorToRedNorth);
 }
 
 void loop() {
@@ -95,11 +109,11 @@ void loop() {
   
   sensorState = digitalRead(SENSORPINNORTH);
   
-  if (sensorState == LOW) {
+  /*if (sensorState == LOW) {
     digitalWrite(GREENLEDNORTH, HIGH);
   } else {
     digitalWrite(GREENLEDNORTH, LOW);
-  }
+  }*/
   
   if (sensorState && !lastState) {
     Serial.println(millis());
@@ -112,6 +126,7 @@ void loop() {
 }
 
 void communicateWithServer() {
+  Serial.println("Trying to connect...");
   WiFiClientSecure client;
   const int httpPort = 443;
   if (client.connect(host, httpPort)) {
@@ -137,17 +152,38 @@ void communicateWithServer() {
     client.println();
     client.println(postData);
   
-    delay(500);
+    delay(100);
   
     while(client.available()) {
       String line = client.readStringUntil('\r');
       Serial.println(line);
+      line.trim();
+      if (line.startsWith("{\"northPercent")) {
+        int locStr = line.indexOf(",\"eastPercent");
+        greenNorthRatio = line.substring(16, locStr).toFloat();
+        redNorthRatio = line.substring(34, line.length()-1).toFloat();
+        Serial.println(String(greenNorthRatio));
+        Serial.println(String(redNorthRatio));
+        
+      }
     }
-
+    timeToBeGreenNorth = INTERVAL * greenNorthRatio;
+    timeToBeRedNorth = INTERVAL * redNorthRatio;
   
   } else {
     Serial.println("connection failed...");
   }
-  delay(500);
+}
+
+void changeLightColorToRedNorth() {
+  digitalWrite(GREENLEDNORTH, LOW);
+  digitalWrite(REDLEDNORTH, HIGH);
+  timer.setTimeout(timeToBeRedNorth, changeLightColorToGreenNorth);
+}
+
+void changeLightColorToGreenNorth() {
+  digitalWrite(GREENLEDNORTH, HIGH);
+  digitalWrite(REDLEDNORTH, LOW);
+  timer.setTimeout(timeToBeGreenNorth, changeLightColorToRedNorth);
 }
 
