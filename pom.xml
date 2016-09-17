@@ -21,6 +21,7 @@
 
     <modules>
         <module>iot-data</module>
+        <module>iot-arduino-handler</module>
     </modules>
 
 </project>
