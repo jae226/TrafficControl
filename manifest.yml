@@ -1,0 +1,8 @@
+---
+applications:
+- name: iot-data
+  host: iot-data
+  memory: 1G
+  services:
+  - iot-postgres
+  path: iot-data/target/iot-data-1.0-SNAPSHOT.jar
