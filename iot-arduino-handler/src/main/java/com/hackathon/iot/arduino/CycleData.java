@@ -1,4 +1,4 @@
-package com.hackatho.iot.arduino;
+package com.hackathon.iot.arduino;
 
 public class CycleData {
     private long sendTime;
@@ -9,11 +9,11 @@ public class CycleData {
     private long[] northSensorReadings;
     private long[] eastSensorReadings;
 
-    private long[] northGreen;
-    private long[] northRed;
+    private long northGreen;
+    private long northRed;
 
-    private long[] eastGreen;
-    private long[] eastRed;
+    private long eastGreen;
+    private long eastRed;
 
     public long getSendTime() {
         return sendTime;
@@ -55,35 +55,35 @@ public class CycleData {
         this.eastSensorReadings = eastSensorReadings;
     }
 
-    public long[] getNorthGreen() {
+    public long getNorthGreen() {
         return northGreen;
     }
 
-    public void setNorthGreen(long[] northGreen) {
+    public void setNorthGreen(long northGreen) {
         this.northGreen = northGreen;
     }
 
-    public long[] getNorthRed() {
+    public long getNorthRed() {
         return northRed;
     }
 
-    public void setNorthRed(long[] northRed) {
+    public void setNorthRed(long northRed) {
         this.northRed = northRed;
     }
 
-    public long[] getEastGreen() {
+    public long getEastGreen() {
         return eastGreen;
     }
 
-    public void setEastGreen(long[] eastGreen) {
+    public void setEastGreen(long eastGreen) {
         this.eastGreen = eastGreen;
     }
 
-    public long[] getEastRed() {
+    public long getEastRed() {
         return eastRed;
     }
 
-    public void setEastRed(long[] eastRed) {
+    public void setEastRed(long eastRed) {
         this.eastRed = eastRed;
     }
 }

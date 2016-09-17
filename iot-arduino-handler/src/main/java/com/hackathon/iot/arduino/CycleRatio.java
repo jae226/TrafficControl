@@ -1,4 +1,4 @@
-package com.hackatho.iot.arduino;
+package com.hackathon.iot.arduino;
 
 public class CycleRatio {
     private double northPercent;

@@ -26,6 +26,18 @@ public class DataPoint {
     @NotNull
     private int totalCarsEast;
 
+    public DataPoint() {
+        // Default constructor for Spring
+    }
+
+    public DataPoint(long timestamp, long totalWaitTimeNorth, long totalWaitTimeEast, int totalCarsNorth, int totalCarsEast) {
+        this.timestamp = new Date(timestamp);
+        this.totalWaitTimeNorth = totalWaitTimeNorth;
+        this.totalWaitTimeEast = totalWaitTimeEast;
+        this.totalCarsNorth = totalCarsNorth;
+        this.totalCarsEast = totalCarsEast;
+    }
+
     public Date getTimestamp() {
         return timestamp;
     }

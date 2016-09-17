@@ -1,4 +1,4 @@
-package com.hackatho.iot.arduino;
+package com.hackathon.iot.arduino;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +10,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @RequestMapping("/cycle-ratio")
 public class ArduinoController {
 
-    ArduinoService arduinoService;
+    private ArduinoService arduinoService;
 
     @Autowired
     public ArduinoController(ArduinoService arduinoService) {
