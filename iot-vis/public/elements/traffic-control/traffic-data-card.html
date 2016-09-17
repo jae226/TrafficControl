@@ -1,0 +1,70 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/px-card/px-card.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+
+<dom-module id="traffic-data-card">
+
+  <template>
+    <px-card header-text="Traffic Data">
+      <table style="border: 1px solid black;">
+        <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Wait Time N</th>
+          <th>Wait Time E</th>
+          <th>Number of Cars N</th>
+          <th>Number of Cars E</th>
+          <th>Average Wait Time N</th>
+          <th>Average Wait Time E</th>
+        </tr>
+        </thead>
+        <tbody>
+        <iron-ajax
+          auto
+          url="/data/traffic-data.json"
+          handle-as="json"
+          last-response="{{trafficData}}"
+        on-response="avgWtN"
+        on-response="avgWtE">
+        </iron-ajax>
+        <template is="dom-repeat" items="[[trafficData]]">
+          <tr>
+            <td>[[item.timeStamp]]</td>
+            <td>[[item.waitTimeN]]</td>
+            <td>[[item.waitTimeE]]</td>
+            <td>[[item.numCarN]]</td>
+            <td>[[item.numCarE]]</td>
+            <td>[[item.avgWtN]]</td>
+            <td>[[item.avgWtE]]</td>
+          </tr>
+        </template>
+        </tbody>
+      </table>
+    </px-card>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'traffic-data-card',
+      avgWtN: function (trafficData) {
+        console.log(trafficData.detail.response);
+        var avglist=[];
+        for(var i=0;i<trafficData.detail.response.length;i+=1){
+          var avg =trafficData.detail.response[i].waitTimeN/trafficData.detail.response[i].numCarN;
+          avglist.push(avg);
+          trafficData.detail.response[i].avgWtN=Number(avg).toPrecision(3);
+
+        }
+        for(var i=0;i<trafficData.detail.response.length;i+=1){
+          var avg =trafficData.detail.response[i].waitTimeE/trafficData.detail.response[i].numCarE;
+          avglist.push(avg);
+          trafficData.detail.response[i].avgWtE= Number(avg).toPrecision(3);
+        }
+        console.log(avglist);
+        return avglist;
+
+      }
+    });
+  </script>
+
+</dom-module>

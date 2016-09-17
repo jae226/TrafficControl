@@ -1,0 +1,19 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/px-card/px-deck.html">
+<link rel="import" href="../traffic-control/traffic-data-card.html">
+<dom-module id="traffic-control-view">
+  <template>
+    <px-deck>
+      <traffic-data-card id="trafficDataCard"></traffic-data-card>
+    </px-deck>
+  </template>
+  <script>
+    Polymer({
+      is: 'traffic-control-view',
+      properties: {},
+      ready: function() {
+        console.log('traffic-control-view ready()')
+      }
+    });
+  </script>
+</dom-module>
