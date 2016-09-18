@@ -41,10 +41,12 @@ int endOfNorthReadings = 0;
 long eastSensorReadings[1024];
 int endOfEastReadings = 0;*/
 
-char types[4096]; //either E=East or N=North
+char types[512]; //either E=East or N=North
 int endOfTypes = 0;
-char carTimes[4096];
+long carTimes[512];
 int endOfCarTimes = 0;
+
+char bufferVar[4096];
 
 long northGreenTime;
 
@@ -122,10 +124,20 @@ void loop() {
   }*/
   
   if (sensorStateNorth && !lastStateNorth) {
-    Serial.println(millis());
+    long temp = millis();
+    Serial.println(temp);
+    types[endOfTypes] = 'N';
+    endOfTypes++;
+    carTimes[endOfCarTimes] = temp;
+    endOfCarTimes++;
   }
   if (sensorStateEast && !lastStateEast) {
-    Serial.println(millis());
+    long temp = millis();
+    Serial.println(temp);
+    types[endOfTypes] = 'E';
+    endOfTypes++;
+    carTimes[endOfCarTimes] = temp;
+    endOfCarTimes++;
   }
   /*if (!sensorStateNorth && lastStateNorth) {
     Serial.println("Broken");
@@ -137,6 +149,7 @@ void loop() {
 
 void communicateWithServer() {
   Serial.println("Trying to connect...");
+  endInterval = millis();
   WiFiClientSecure client;
   const int httpPort = 443;
   if (client.connect(host, httpPort)) {
@@ -146,8 +159,13 @@ void communicateWithServer() {
     } else {
       Serial.println("ssl cert mismatch");
     }
-      
-    String postData="{\"eastGreen\": 0, \"eastRed\": 0, \"eastSensorReadings\": [0], \"intervalEnd\": 0, \"intervalStart\": 0, \"northGreen\": 0, \"northRed\": 0, \"northSensorReadings\": [0], \"sendTime\": 0}";
+
+    sendRequestTime = millis();
+
+    makePostData();
+
+    Serial.println(bufferVar);
+    //String postData="{\"eastGreen\": 0, \"eastRed\": 0, \"eastSensorReadings\": [0], \"intervalEnd\": 0, \"intervalStart\": 0, \"northGreen\": 0, \"northRed\": 0, \"northSensorReadings\": [0], \"sendTime\": 0}";
   
     client.print("POST ");
     client.print(URL);
@@ -158,9 +176,12 @@ void communicateWithServer() {
     client.println("Connection: close");
     client.println("Content-Type: application/json;");
     client.print("Content-Length: ");
-    client.println(postData.length());
+    client.println(strlen(bufferVar));
     client.println();
-    client.println(postData);
+    client.println(bufferVar);
+    endOfTypes = 0;
+    endOfCarTimes = 0;
+    *bufferVar = 0;
   
     delay(100);
   
@@ -171,7 +192,7 @@ void communicateWithServer() {
       if (line.startsWith("{\"northPercent")) {
         int locStr = line.indexOf(",\"eastPercent");
         greenNorthRatio = line.substring(16, locStr).toFloat();
-        redNorthRatio = line.substring(34, line.length()-1).toFloat();
+        redNorthRatio = line.substring(locStr+15, line.length()-1).toFloat();
         Serial.println(String(greenNorthRatio));
         Serial.println(String(redNorthRatio));
         
@@ -186,18 +207,56 @@ void communicateWithServer() {
 }
 
 void changeLightColorToRedNorth() {
+  long temp = millis();
   digitalWrite(GREENLEDNORTH, LOW);
   digitalWrite(REDLEDNORTH, HIGH);
+  northRedTime = temp;
   digitalWrite(GREENLEDEAST, HIGH);
+  eastGreenTime = temp;
   digitalWrite(REDLEDEAST, LOW);
   timer.setTimeout(timeToBeRedNorth, changeLightColorToGreenNorth);
 }
 
 void changeLightColorToGreenNorth() {
+  long temp = millis();
   digitalWrite(GREENLEDNORTH, HIGH);
+  northGreenTime = temp;
   digitalWrite(REDLEDNORTH, LOW);
   digitalWrite(GREENLEDEAST, LOW);
   digitalWrite(REDLEDEAST, HIGH);
+  eastRedTime = temp;
   timer.setTimeout(timeToBeGreenNorth, changeLightColorToRedNorth);
+}
+
+void makePostData() {
+      //String postData="{\"eastGreen\": 0, \"eastRed\": 0, \"eastSensorReadings\": [0], \"intervalEnd\": 0, \"intervalStart\": 0, \"northGreen\": 0, \"northRed\": 0, \"northSensorReadings\": [0], \"sendTime\": 0}";
+  char* ptr = bufferVar;
+  sprintf(ptr, "{\"eastGreen\": %ld, \"eastRed\": %ld, \"intervalEnd\": %ld, \"intervalStart\": %ld, \"northGreen\": %ld, \"northRed\": %ld, \"sendTime\": %ld, ", eastGreenTime, eastRedTime, endInterval, startInterval, northGreenTime, northRedTime, sendRequestTime);
+  ptr += strlen(ptr);
+  sprintf(ptr, "\"eastSensorReadings\": [ ");
+  ptr += strlen(ptr);
+  if (endOfTypes != 0) {
+    for (int i = 0; i < endOfTypes; i++) {
+      if (types[i] == 'E') {
+        sprintf(ptr, "%ld,", carTimes[i]);
+        ptr += strlen(ptr);
+      }
+    }
+    ptr--;
+  }
+  sprintf(ptr, "], \"northSensorReadings\": [ ");
+  ptr += strlen(ptr);
+  if (endOfTypes != 0) {
+    for (int i = 0; i < endOfTypes; i++) {
+      if (types[i] == 'N') {
+        sprintf(ptr, "%ld,", carTimes[i]);
+        ptr += strlen(ptr);
+      }
+    }
+    ptr--;
+  }
+  sprintf(ptr, "]}");
+  ptr += strlen(ptr);
+
 }
 
